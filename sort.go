@@ -2,13 +2,17 @@ package sortbench
 
 func Sort(nums []int) {
 	n := len(nums)
-	for i := 1; i < n; i++ {
-		key := nums[i]
-		j := i - 1
-		for j >= 0 && nums[j] > key {
-			nums[j+1] = nums[j]
-			j--
+	gap := n / 2
+	for gap > 0 {
+		for i := gap; i < n; i++ {
+			key := nums[i]
+			j := i
+			for j >= gap && nums[j-gap] > key {
+				nums[j] = nums[j-gap]
+				j -= gap
+			}
+			nums[j] = key
 		}
-		nums[j+1] = key
+		gap /= 2
 	}
 }

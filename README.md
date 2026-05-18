@@ -10,5 +10,6 @@ The `Sort` function in `sort.go` is tagged with different algorithms across the 
 | `v1.1.0` | Insertion sort |
 | `v1.2.0` | Shell sort |
 | `v1.3.0` | Quicksort |
+| `v1.4.0` | Merge sort |
 
 Each tag represents a different sorting implementation, allowing benchmark comparisons to be run and visualized across algorithm variations.

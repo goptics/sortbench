@@ -12,28 +12,11 @@ jobs:
   bench:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
-          go-version: '1.24'
-          cache: true
-
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/go/bin
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: ${{ runner.os }}-go-
-
-      - name: Install vizb
-        run: go install github.com/goptics/vizb@v0.9.5
-
-      - name: Run benchmarks and convert to JSON
-        run: |
-           go test -bench=. > bench.txt
-           vizb bench.txt -o new.json --tag ${{ github.ref_name }} -p _y -n "Sort Benchmarks" --scale log < /dev/null
+          go-version-file: go.mod
 
       - name: Download previous merged data
         uses: dawidd6/action-download-artifact@v6
@@ -43,24 +26,24 @@ jobs:
           name: merged.json
           path: prev
 
-      - name: Merge with previous or use fresh
-        run: |
-          if [ -f prev/merged.json ]; then
-            vizb merge prev/merged.json new.json -o merged.json --tag-axis x
-          else
-            cp new.json merged.json
-          fi
+      - name: Run benchmarks, merge, and output
+        uses: goptics/vizb@v0.10.0
+        with:
+          bench-cmd: "go test -bench=."
+          tag: ${{ github.ref_name }}
+          group-pattern: _y
+          name: "Sort Benchmarks"
+          scale: log
+          merge-dir: prev
+          tag-axis: x
+          output-json: merged.json
+          output-html: pages/index.html
 
       - name: Upload merged JSON artifact
         uses: actions/upload-artifact@v4
         with:
           name: merged.json
           path: merged.json
-
-      - name: Generate HTML for GitHub Pages
-        run: |
-          mkdir -p pages
-          vizb merge merged.json -o pages/index.html < /dev/null
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
